@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Øvingsoppgaver – Grunngiving av etiske standpunkter</title>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f6f4f0;
+    --card: #ffffff;
+    --text: #2c2c2c;
+    --muted: #6b6b6b;
+    --accent: #2d6a4f;
+    --accent-light: #d8f3dc;
+    --accent-hover: #1b4332;
+    --correct: #2d6a4f;
+    --correct-bg: #d8f3dc;
+    --wrong: #9e2a2b;
+    --wrong-bg: #fde8e8;
+    --border: #e0ddd8;
+    --shadow: 0 2px 12px rgba(0,0,0,0.06);
+    --radius: 12px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.65;
+    padding: 2rem 1rem;
+    max-width: 760px;
+    margin: 0 auto;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+    padding-bottom: 2rem;
+    border-bottom: 2px solid var(--border);
+  }
+
+  .header-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+  }
+
+  h1 {
+    font-family: 'Source Serif 4', serif;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 0.5rem;
+    line-height: 1.25;
+  }
+
+  .header p {
+    color: var(--muted);
+    font-size: 0.95rem;
+    max-width: 520px;
+    margin: 0 auto;
+  }
+
+  .progress-container {
+    background: var(--border);
+    border-radius: 100px;
+    height: 6px;
+    margin-bottom: 2rem;
+    overflow: hidden;
+  }
+  .progress-bar {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 100px;
+    width: 0%;
+    transition: width 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+  .progress-text {
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+  }
+
+  .question-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 2rem;
+    margin-bottom: 1.25rem;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    transition: opacity 0.3s ease;
+  }
+
+  .question-card.locked { opacity: 0.85; }
+
+  .question-number {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.75rem;
+  }
+
+  .question-type {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    background: var(--bg);
+    padding: 3px 10px;
+    border-radius: 100px;
+    margin-left: 0.75rem;
+  }
+
+  .question-text {
+    font-family: 'Source Serif 4', serif;
+    font-size: 1.15rem;
+    font-weight: 600;
+    line-height: 1.5;
+    margin-bottom: 1.25rem;
+    color: var(--text);
+  }
+
+  .scenario {
+    background: var(--bg);
+    border-left: 3px solid var(--accent);
+    padding: 1rem 1.25rem;
+    border-radius: 0 8px 8px 0;
+    margin-bottom: 1.25rem;
+    font-style: italic;
+    font-family: 'Source Serif 4', serif;
+    color: var(--text);
+    font-size: 0.95rem;
+  }
+
+  .options { display: flex; flex-direction: column; gap: 0.6rem; }
+
+  .option {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.9rem 1.1rem;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: var(--card);
+    font-size: 0.93rem;
+    line-height: 1.5;
+  }
+
+  .option:hover:not(.disabled) {
+    border-color: var(--accent);
+    background: var(--accent-light);
+  }
+
+  .option.selected { border-color: var(--accent); background: var(--accent-light); }
+  .option.correct { border-color: var(--correct); background: var(--correct-bg); }
+  .option.wrong { border-color: var(--wrong); background: var(--wrong-bg); }
+  .option.disabled { cursor: default; opacity: 0.7; }
+  .option.disabled.correct { opacity: 1; }
+
+  .option-marker {
+    flex-shrink: 0;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--muted);
+    margin-top: 1px;
+    transition: all 0.2s ease;
+  }
+
+  .option.selected .option-marker,
+  .option.correct .option-marker {
+    border-color: var(--correct);
+    background: var(--correct);
+    color: white;
+  }
+
+  .option.wrong .option-marker {
+    border-color: var(--wrong);
+    background: var(--wrong);
+    color: white;
+  }
+
+  .feedback {
+    margin-top: 1rem;
+    padding: 1rem 1.25rem;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    display: none;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .feedback.show { display: block; }
+
+  .feedback.correct-feedback {
+    background: var(--correct-bg);
+    border: 1px solid #b7e4c7;
+    color: #1b4332;
+  }
+
+  .feedback.wrong-feedback {
+    background: var(--wrong-bg);
+    border: 1px solid #f5c6c6;
+    color: #6b1c1c;
+  }
+
+  .feedback-icon { font-weight: 700; margin-right: 0.3rem; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .results-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 2.5rem 2rem;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    text-align: center;
+    display: none;
+    animation: fadeIn 0.5s ease;
+  }
+
+  .results-card.show { display: block; }
+
+  .score-circle {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: var(--accent-light);
+    border: 4px solid var(--accent);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+  }
+
+  .score-number {
+    font-family: 'Source Serif 4', serif;
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  .score-label {
+    font-size: 0.75rem;
+    color: var(--muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .results-message {
+    font-family: 'Source Serif 4', serif;
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+
+  .results-sub {
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .btn-reset {
+    display: inline-block;
+    padding: 0.75rem 2rem;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 100px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease;
+  }
+
+  .btn-reset:hover { background: var(--accent-hover); }
+
+  @media (max-width: 600px) {
+    body { padding: 1rem 0.75rem; }
+    h1 { font-size: 1.6rem; }
+    .question-card { padding: 1.5rem 1.25rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-label">Øvingsoppgaver</div>
+  <h1>Grunngiving av etiske standpunkter</h1>
+  <p>Test din forståelse av hvordan vi begrunner etiske standpunkter i et mangfoldig samfunn – med utgangspunkt i Vetlesen.</p>
+</div>
+
+<div class="progress-text">Spørsmål <span id="answered">0</span> av <span id="total">8</span> besvart</div>
+<div class="progress-container">
+  <div class="progress-bar" id="progressBar"></div>
+</div>
+
+<div id="questionsContainer"></div>
+
+<div class="results-card" id="resultsCard">
+  <div class="score-circle">
+    <div class="score-number" id="scoreNumber">0</div>
+    <div class="score-label">av <span id="scoreTotal">8</span></div>
+  </div>
+  <div class="results-message" id="resultsMessage"></div>
+  <div class="results-sub" id="resultsSub"></div>
+  <button class="btn-reset" onclick="resetQuiz()">Prøv på nytt</button>
+</div>
+
+<script>
+const questions = [
+  {
+    type: "Begrep",
+    question: "Hva mener Vetlesen er hovedutfordringen med etisk begrunnelse i vår tid?",
+    options: [
+      "At mennesker har blitt mindre moralske enn før",
+      "At tradisjonelle autoriteter som religion ikke lenger fungerer som felles begrunnelse",
+      "At filosofien har blitt for komplisert for vanlige folk",
+      "At skolen ikke lenger underviser i etikk"
+    ],
+    correct: 1,
+    feedback: "Vetlesen peker på at tradisjonelle kilder til moralsk autoritet – særlig religion – ikke lenger har en selvfølgelig plass i et mangfoldig samfunn. Det betyr ikke at vi mangler moral, men at vi mangler en felles plattform å begrunne den fra."
+  },
+  {
+    type: "Begrep",
+    question: "Hva mener Nietzsche med utsagnet «Når Gud er død, er alt tillatt»?",
+    options: [
+      "At han feirer at mennesker nå kan gjøre hva de vil",
+      "At religion alltid har vært skadelig for moralen",
+      "At når felles normer forsvinner, mister vi fotfestet for moralsk begrunnelse",
+      "At ateister ikke kan være moralske mennesker"
+    ],
+    correct: 2,
+    feedback: "Nietzsche peker på et alvor: Når de felles normene forsvinner, står mennesket i fare for å miste det moralske fotfestet – ikke fordi vi blir onde, men fordi vi mangler gode grunner. Det er en diagnose, ikke en feiring."
+  },
+  {
+    type: "Begrep",
+    question: "Vetlesen avviser to ytterpunkter i etikken. Hvilke?",
+    options: [
+      "Pliktetikk og konsekvensetikk",
+      "Religiøs fundamentalisme og postmoderne relativisme",
+      "Individualisme og kollektivisme",
+      "Teori og praksis"
+    ],
+    correct: 1,
+    feedback: "Vetlesen er kritisk både til religiøs fundamentalisme (én sannhet gjelder for alle) og postmoderne relativisme (alt er bare smak og behag). Begge er for enkle løsninger. Religion er ikke irrelevant, men kan ikke fungere som felles begrunnelse – og det betyr ikke at alt blir subjektivt."
+  },
+  {
+    type: "Begrep",
+    question: "Ifølge Vetlesen – hvor begynner etikken?",
+    options: [
+      "I teoretiske systemer og filosofiske prinsipper",
+      "I lovverket og menneskerettighetene",
+      "I levde erfaringer – særlig av krenkelse, sårbarhet og lidelse",
+      "I religiøse tekster og tradisjoner"
+    ],
+    correct: 2,
+    feedback: "Vetlesen mener etikken begynner i erfaring, ikke i teori. Når et barn sier «det er urettferdig!», viser det ikke til Kant eller Bibelen – men vi forstår umiddelbart hva som står på spill. Moralske vurderinger springer ut av levde erfaringer."
+  },
+  {
+    type: "Scenario",
+    scenario: "I en diskusjon om mobilbruk i skolen sier en kollega: «Jeg synes bare det er feil – det føles galt.» En annen svarer: «Men kan du forklare hvem som berøres, og hva som faktisk står på spill?»",
+    question: "Hva illustrerer denne samtalen ifølge Vetlesens tenkning?",
+    options: [
+      "At følelser er irrelevante i etisk diskusjon",
+      "At den første kollegaen har en moralsk mening, mens den andre etterspør en begrunnelse",
+      "At etikk bare handler om fakta, ikke om følelser",
+      "At begge tar feil – etikk kan ikke diskuteres rasjonelt"
+    ],
+    correct: 1,
+    feedback: "Vetlesen skiller mellom å ha en moralsk mening og å begrunne den. Å begrunne handler om å vise hvem som berøres, hvilken krenkelse som står på spill, og hva situasjonen krever – ikke bare hva man føler."
+  },
+  {
+    type: "Scenario",
+    scenario: "En elev blir konsekvent holdt utenfor i friminuttet. Læreren legger merke til det og kjenner en umiddelbar uro. I stedet for å slå opp i et regelverk, spør hun seg selv: «Hva skjer med dette barnet? Hva krever situasjonen av meg nå?»",
+    question: "Hvilken tilnærming til etikk representerer lærerens reaksjon best?",
+    options: [
+      "Regeletikk – hun følger skolens handlingsplan",
+      "Konsekvensetikk – hun beregner hva som gir best utfall",
+      "Vetlesens erfaringsbaserte etikk – hun tar utgangspunkt i barnets sårbarhet og situasjonen",
+      "Relativisme – hun lar sin egen mening styre"
+    ],
+    correct: 2,
+    feedback: "Læreren gjør nettopp det Vetlesen beskriver: hun starter med erfaringen, med barnets sårbarhet, og spør hva situasjonen krever. Etikken begynner ikke med «hvilken regel gjelder?» men med «hva skjer med mennesker her?»"
+  },
+  {
+    type: "Refleksjon",
+    question: "Hvorfor er moralsk dømmekraft viktigere enn regler alene, ifølge Vetlesen?",
+    options: [
+      "Fordi regler alltid er utdaterte",
+      "Fordi regler ikke kan dekke alle situasjoner – mennesker og kontekster er forskjellige",
+      "Fordi regler er laget av autoriteter vi ikke lenger stoler på",
+      "Fordi dømmekraft er det samme som magefølelse"
+    ],
+    correct: 1,
+    feedback: "Vetlesen mener regler kan være viktige, men de kan aldri erstatte dømmekraft. Situasjoner er forskjellige, mennesker er forskjellige. Å handle etisk krever evne til å vurdere hva den konkrete situasjonen krever – ikke bare å følge en ferdig oppskrift."
+  },
+  {
+    type: "Refleksjon",
+    question: "Hva mener Vetlesen er målet med etisk samtale i et mangfoldig samfunn?",
+    options: [
+      "Å overbevise den andre om at man har rett",
+      "Å finne den ene riktige løsningen alle kan enes om",
+      "Å ta hverandres begrunnelser på alvor og gjøre rede for hvorfor noe betyr noe",
+      "Å unngå konflikt ved å holde meningene sine for seg selv"
+    ],
+    correct: 2,
+    feedback: "Vetlesen mener at etisk samtale ikke handler om å vinne, men om å gjøre rede for hvorfor noe betyr noe – ikke bare for meg, men for andre. Vi kan ikke forvente enighet om alt, men vi kan forvente at vi tar hverandres begrunnelser på alvor."
+  }
+];
+
+let answered = 0;
+const total = questions.length;
+document.getElementById('total').textContent = total;
+document.getElementById('scoreTotal').textContent = total;
+
+function buildQuiz() {
+  const container = document.getElementById('questionsContainer');
+  container.innerHTML = '';
+
+  questions.forEach((q, qi) => {
+    const card = document.createElement('div');
+    card.className = 'question-card';
+    card.id = `q${qi}`;
+
+    let html = `
+      <div class="question-number">
+        Spørsmål ${qi + 1}
+        <span class="question-type">${q.type}</span>
+      </div>
+    `;
+
+    if (q.scenario) {
+      html += `<div class="scenario">${q.scenario}</div>`;
+    }
+
+    html += `<div class="question-text">${q.question}</div>`;
+    html += `<div class="options" id="options-${qi}">`;
+
+    const markers = ['A', 'B', 'C', 'D'];
+    q.options.forEach((opt, oi) => {
+      html += `
+        <div class="option" id="opt-${qi}-${oi}" onclick="selectOption(${qi}, ${oi})">
+          <div class="option-marker">${markers[oi]}</div>
+          <div>${opt}</div>
+        </div>
+      `;
+    });
+
+    html += `</div>`;
+    html += `<div class="feedback" id="feedback-${qi}"></div>`;
+    card.innerHTML = html;
+    container.appendChild(card);
+  });
+}
+
+function selectOption(qi, oi) {
+  const q = questions[qi];
+  const optionsEl = document.getElementById(`options-${qi}`);
+  const allOpts = optionsEl.querySelectorAll('.option');
+
+  if (allOpts[0].classList.contains('disabled')) return;
+
+  answered++;
+  document.getElementById('answered').textContent = answered;
+  document.getElementById('progressBar').style.width = `${(answered / total) * 100}%`;
+
+  allOpts.forEach((opt, i) => {
+    opt.classList.add('disabled');
+    if (i === q.correct) opt.classList.add('correct');
+    if (i === oi && oi !== q.correct) opt.classList.add('wrong');
+    if (i === oi) opt.classList.add('selected');
+  });
+
+  const feedbackEl = document.getElementById(`feedback-${qi}`);
+  const isCorrect = oi === q.correct;
+  feedbackEl.className = `feedback show ${isCorrect ? 'correct-feedback' : 'wrong-feedback'}`;
+  feedbackEl.innerHTML = `
+    <span class="feedback-icon">${isCorrect ? '✓' : '✗'}</span>
+    <strong>${isCorrect ? 'Riktig!' : 'Ikke helt.'}</strong> ${q.feedback}
+  `;
+
+  document.getElementById(`q${qi}`).classList.add('locked');
+
+  if (answered === total) {
+    setTimeout(showResults, 600);
+  }
+}
+
+function showResults() {
+  const correctCount = questions.reduce((sum, q, qi) => {
+    const opt = document.querySelector(`#opt-${qi}-${q.correct}`);
+    return sum + (opt && opt.classList.contains('selected') ? 1 : 0);
+  }, 0);
+
+  document.getElementById('scoreNumber').textContent = correctCount;
+
+  let msg, sub;
+  const pct = correctCount / total;
+  if (pct === 1) {
+    msg = 'Imponerende!';
+    sub = 'Du har full kontroll på etisk begrunnelse hos Vetlesen.';
+  } else if (pct >= 0.75) {
+    msg = 'Veldig bra!';
+    sub = 'Du har god forståelse. Se gjennom forklaringene på de du bommet på.';
+  } else if (pct >= 0.5) {
+    msg = 'På god vei!';
+    sub = 'Les gjennom forklaringene og se videoen en gang til – da sitter det neste gang.';
+  } else {
+    msg = 'Øvelse gjør mester!';
+    sub = 'Det kan være lurt å se videoen på nytt og lese i pensum før du prøver igjen.';
+  }
+
+  document.getElementById('resultsMessage').textContent = msg;
+  document.getElementById('resultsSub').textContent = sub;
+  document.getElementById('resultsCard').classList.add('show');
+
+  document.getElementById('resultsCard').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function resetQuiz() {
+  answered = 0;
+  document.getElementById('answered').textContent = 0;
+  document.getElementById('progressBar').style.width = '0%';
+  document.getElementById('resultsCard').classList.remove('show');
+  buildQuiz();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+buildQuiz();
+</script>
+
+</body>
+</html>
