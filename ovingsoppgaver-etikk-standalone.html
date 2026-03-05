@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Øvingsoppgaver – Pliktetikk og konsekvensetikk</title>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f6f4f0;
+    --card: #ffffff;
+    --text: #2c2c2c;
+    --muted: #6b6b6b;
+    --accent: #2d6a4f;
+    --accent-light: #d8f3dc;
+    --accent-hover: #1b4332;
+    --correct: #2d6a4f;
+    --correct-bg: #d8f3dc;
+    --wrong: #9e2a2b;
+    --wrong-bg: #fde8e8;
+    --border: #e0ddd8;
+    --shadow: 0 2px 12px rgba(0,0,0,0.06);
+    --radius: 12px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.65;
+    padding: 2rem 1rem;
+    max-width: 760px;
+    margin: 0 auto;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+    padding-bottom: 2rem;
+    border-bottom: 2px solid var(--border);
+  }
+
+  .header-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+  }
+
+  h1 {
+    font-family: 'Source Serif 4', serif;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 0.5rem;
+    line-height: 1.25;
+  }
+
+  .header p {
+    color: var(--muted);
+    font-size: 0.95rem;
+    max-width: 520px;
+    margin: 0 auto;
+  }
+
+  /* Progress bar */
+  .progress-container {
+    background: var(--border);
+    border-radius: 100px;
+    height: 6px;
+    margin-bottom: 2rem;
+    overflow: hidden;
+  }
+  .progress-bar {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 100px;
+    width: 0%;
+    transition: width 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+  .progress-text {
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+  }
+
+  /* Question cards */
+  .question-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 2rem;
+    margin-bottom: 1.25rem;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    transition: opacity 0.3s ease;
+  }
+
+  .question-card.locked {
+    opacity: 0.85;
+  }
+
+  .question-number {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.75rem;
+  }
+
+  .question-type {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    background: var(--bg);
+    padding: 3px 10px;
+    border-radius: 100px;
+    margin-left: 0.75rem;
+  }
+
+  .question-text {
+    font-family: 'Source Serif 4', serif;
+    font-size: 1.15rem;
+    font-weight: 600;
+    line-height: 1.5;
+    margin-bottom: 1.25rem;
+    color: var(--text);
+  }
+
+  .scenario {
+    background: var(--bg);
+    border-left: 3px solid var(--accent);
+    padding: 1rem 1.25rem;
+    border-radius: 0 8px 8px 0;
+    margin-bottom: 1.25rem;
+    font-style: italic;
+    font-family: 'Source Serif 4', serif;
+    color: var(--text);
+    font-size: 0.95rem;
+  }
+
+  /* Options */
+  .options { display: flex; flex-direction: column; gap: 0.6rem; }
+
+  .option {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.9rem 1.1rem;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: var(--card);
+    font-size: 0.93rem;
+    line-height: 1.5;
+  }
+
+  .option:hover:not(.disabled) {
+    border-color: var(--accent);
+    background: var(--accent-light);
+  }
+
+  .option.selected {
+    border-color: var(--accent);
+    background: var(--accent-light);
+  }
+
+  .option.correct {
+    border-color: var(--correct);
+    background: var(--correct-bg);
+  }
+
+  .option.wrong {
+    border-color: var(--wrong);
+    background: var(--wrong-bg);
+  }
+
+  .option.disabled {
+    cursor: default;
+    opacity: 0.7;
+  }
+  .option.disabled.correct {
+    opacity: 1;
+  }
+
+  .option-marker {
+    flex-shrink: 0;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--muted);
+    margin-top: 1px;
+    transition: all 0.2s ease;
+  }
+
+  .option.selected .option-marker,
+  .option.correct .option-marker {
+    border-color: var(--correct);
+    background: var(--correct);
+    color: white;
+  }
+
+  .option.wrong .option-marker {
+    border-color: var(--wrong);
+    background: var(--wrong);
+    color: white;
+  }
+
+  /* Feedback */
+  .feedback {
+    margin-top: 1rem;
+    padding: 1rem 1.25rem;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    display: none;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .feedback.show { display: block; }
+
+  .feedback.correct-feedback {
+    background: var(--correct-bg);
+    border: 1px solid #b7e4c7;
+    color: #1b4332;
+  }
+
+  .feedback.wrong-feedback {
+    background: var(--wrong-bg);
+    border: 1px solid #f5c6c6;
+    color: #6b1c1c;
+  }
+
+  .feedback-icon {
+    font-weight: 700;
+    margin-right: 0.3rem;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Results */
+  .results-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 2.5rem 2rem;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    text-align: center;
+    display: none;
+    animation: fadeIn 0.5s ease;
+  }
+
+  .results-card.show { display: block; }
+
+  .score-circle {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: var(--accent-light);
+    border: 4px solid var(--accent);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+  }
+
+  .score-number {
+    font-family: 'Source Serif 4', serif;
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  .score-label {
+    font-size: 0.75rem;
+    color: var(--muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .results-message {
+    font-family: 'Source Serif 4', serif;
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+
+  .results-sub {
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .btn-reset {
+    display: inline-block;
+    padding: 0.75rem 2rem;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 100px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease;
+  }
+
+  .btn-reset:hover { background: var(--accent-hover); }
+
+  @media (max-width: 600px) {
+    body { padding: 1rem 0.75rem; }
+    h1 { font-size: 1.6rem; }
+    .question-card { padding: 1.5rem 1.25rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-label">Øvingsoppgaver</div>
+  <h1>Pliktetikk og konsekvensetikk</h1>
+  <p>Test din forståelse av de to etiske modellene. Les hvert spørsmål nøye og velg det svaret du mener er riktig.</p>
+</div>
+
+<div class="progress-text">Spørsmål <span id="answered">0</span> av <span id="total">8</span> besvart</div>
+<div class="progress-container">
+  <div class="progress-bar" id="progressBar"></div>
+</div>
+
+<div id="questionsContainer"></div>
+
+<div class="results-card" id="resultsCard">
+  <div class="score-circle">
+    <div class="score-number" id="scoreNumber">0</div>
+    <div class="score-label">av <span id="scoreTotal">8</span></div>
+  </div>
+  <div class="results-message" id="resultsMessage"></div>
+  <div class="results-sub" id="resultsSub"></div>
+  <button class="btn-reset" onclick="resetQuiz()">Prøv på nytt</button>
+</div>
+
+<script>
+const questions = [
+  {
+    type: "Begrep",
+    question: "Hva er kjernen i pliktetikken?",
+    options: [
+      "At en handling er riktig hvis den gir best mulig resultat for flest mulig",
+      "At en handling er riktig eller gal i seg selv, uavhengig av konsekvensene",
+      "At en handling er riktig hvis den er i tråd med følelsene våre",
+      "At en handling er riktig hvis den er lovlig"
+    ],
+    correct: 1,
+    feedback: "Pliktetikken vurderer handlingen i seg selv. Noen handlinger er rett eller galt uavhengig av hva som kommer ut av dem. Kant mente for eksempel at det alltid er galt å lyve – selv om løgnen kunne ført til et godt resultat."
+  },
+  {
+    type: "Begrep",
+    question: "Hvilken filosof er mest kjent for å ha utviklet pliktetikken?",
+    options: [
+      "Jeremy Bentham",
+      "Aristoteles",
+      "Immanuel Kant",
+      "John Stuart Mill"
+    ],
+    correct: 2,
+    feedback: "Immanuel Kant (1724–1804) er den mest kjente representanten for pliktetikken. Han formulerte det kategoriske imperativ som grunnlag for moralsk handling."
+  },
+  {
+    type: "Begrep",
+    question: "Hva kjennetegner konsekvensetikken?",
+    options: [
+      "At handlingens moralske verdi bestemmes av dens konsekvenser",
+      "At vi alltid må følge regler og plikter",
+      "At moralen handler om å utvikle gode karaktertrekk",
+      "At moralen er relativ og avhenger av kulturen"
+    ],
+    correct: 0,
+    feedback: "I konsekvensetikken er det resultatet av handlingen som avgjør om den er moralsk riktig eller gal. Den mest kjente varianten er utilitarismen, som sier at vi bør handle slik at vi skaper mest mulig lykke for flest mulig."
+  },
+  {
+    type: "Scenario",
+    scenario: "En lærer oppdager at en elev har jukset på en prøve. Eleven har det svært vanskelig hjemme, og læreren vet at en anmerkning kan gjøre situasjonen verre. Læreren velger likevel å rapportere jukset fordi \"juks er alltid galt, uansett omstendighetene.\"",
+    question: "Hvilken etisk modell ligger til grunn for lærerens valg?",
+    options: [
+      "Konsekvensetikk",
+      "Pliktetikk",
+      "Dydsetikk",
+      "Situasjonsetikk"
+    ],
+    correct: 1,
+    feedback: "Læreren handler ut fra pliktetikken: Juks er galt i seg selv, uavhengig av konsekvensene for eleven. En konsekvensetiker ville i stedet vurdert hva som gir best samlet utfall."
+  },
+  {
+    type: "Scenario",
+    scenario: "Rektor vurderer om skolen skal innføre mobilforbud. Hun lager en grundig oversikt over fordeler og ulemper: bedre konsentrasjon, men også redusert sikkerhet og mindre fleksibilitet. Hun velger å innføre forbudet fordi fordelene veier tyngst.",
+    question: "Hvilken etisk tilnærming bruker rektor?",
+    options: [
+      "Pliktetikk – hun følger en moralsk plikt",
+      "Konsekvensetikk – hun vurderer hva som gir best resultat",
+      "Dydsetikk – hun handler ut fra gode dyder",
+      "Nærhetsetikk – hun prioriterer relasjoner"
+    ],
+    correct: 1,
+    feedback: "Rektor veier fordeler mot ulemper og velger det alternativet som gir mest nytte totalt sett. Dette er konsekvensetisk tenkning – konsekvensene avgjør hva som er riktig."
+  },
+  {
+    type: "Refleksjon",
+    question: "Hva er en vanlig innvending mot konsekvensetikken?",
+    options: [
+      "Den tar ikke hensyn til menneskers følelser",
+      "Den kan rettferdiggjøre urettferdige handlinger hvis de gir gode resultater",
+      "Den er for enkel å anvende i praksis",
+      "Den legger for stor vekt på regler"
+    ],
+    correct: 1,
+    feedback: "En klassisk innvending er at konsekvensetikken i teorien kan forsvare handlinger de fleste ville anse som urettferdige – for eksempel å ofre én uskyldig person for å redde mange. Det er vanskelig å akseptere at målet helliger middelet i alle tilfeller."
+  },
+  {
+    type: "Refleksjon",
+    question: "Hva er en vanlig innvending mot pliktetikken?",
+    options: [
+      "Den bryr seg ikke om hva som er rett og galt",
+      "Den er for fleksibel og lar oss gjøre hva vi vil",
+      "Den kan føre til rigid regelbruk uten hensyn til kontekst og konsekvenser",
+      "Den er bare opptatt av å maksimere lykke"
+    ],
+    correct: 2,
+    feedback: "Pliktetikken kritiseres for å kunne bli for stiv. Hvis det alltid er galt å lyve, hva gjør du da om noen spør hvor vennen din gjemmer seg – og den som spør vil skade vedkommende? Kritikerne mener at vi noen ganger må ta hensyn til situasjonen."
+  },
+  {
+    type: "Anvendelse",
+    scenario: "Du er kontaktlærer og en forelder ringer og spør om du kan gi barnet bedre karakter fordi familien skal søke om skoleplass på en populær skole. Forelderen sier: \"Det skader jo ingen – det er bare til barnets beste.\"",
+    question: "Hvordan ville en pliktetiker vurdere dette?",
+    options: [
+      "Det er greit så lenge det gagner barnet og ikke skader andre",
+      "Det er galt fordi karakterer skal gjenspeile faglig nivå – å gi uriktige karakterer er uærlig uansett formål",
+      "Det er en vanskelig situasjon der læreren bør følge magefølelsen",
+      "Det avhenger av om skolen har strenge regler om dette"
+    ],
+    correct: 1,
+    feedback: "En pliktetiker vil si at det er galt å gi uriktige karakterer, fordi ærlighet og rettferdighet er plikter som ikke kan settes til side – selv om intensjonen er god. Konsekvensene for barnet endrer ikke at handlingen i seg selv er uærlig."
+  }
+];
+
+let answered = 0;
+const total = questions.length;
+document.getElementById('total').textContent = total;
+document.getElementById('scoreTotal').textContent = total;
+
+function buildQuiz() {
+  const container = document.getElementById('questionsContainer');
+  container.innerHTML = '';
+
+  questions.forEach((q, qi) => {
+    const card = document.createElement('div');
+    card.className = 'question-card';
+    card.id = `q${qi}`;
+
+    let html = `
+      <div class="question-number">
+        Spørsmål ${qi + 1}
+        <span class="question-type">${q.type}</span>
+      </div>
+    `;
+
+    if (q.scenario) {
+      html += `<div class="scenario">${q.scenario}</div>`;
+    }
+
+    html += `<div class="question-text">${q.question}</div>`;
+    html += `<div class="options" id="options-${qi}">`;
+
+    const markers = ['A', 'B', 'C', 'D'];
+    q.options.forEach((opt, oi) => {
+      html += `
+        <div class="option" id="opt-${qi}-${oi}" onclick="selectOption(${qi}, ${oi})">
+          <div class="option-marker">${markers[oi]}</div>
+          <div>${opt}</div>
+        </div>
+      `;
+    });
+
+    html += `</div>`;
+    html += `<div class="feedback" id="feedback-${qi}"></div>`;
+    card.innerHTML = html;
+    container.appendChild(card);
+  });
+}
+
+function selectOption(qi, oi) {
+  const q = questions[qi];
+  const optionsEl = document.getElementById(`options-${qi}`);
+  const allOpts = optionsEl.querySelectorAll('.option');
+
+  // Check if already answered
+  if (allOpts[0].classList.contains('disabled')) return;
+
+  answered++;
+  document.getElementById('answered').textContent = answered;
+  document.getElementById('progressBar').style.width = `${(answered / total) * 100}%`;
+
+  // Disable all and mark
+  allOpts.forEach((opt, i) => {
+    opt.classList.add('disabled');
+    if (i === q.correct) opt.classList.add('correct');
+    if (i === oi && oi !== q.correct) opt.classList.add('wrong');
+    if (i === oi) opt.classList.add('selected');
+  });
+
+  // Feedback
+  const feedbackEl = document.getElementById(`feedback-${qi}`);
+  const isCorrect = oi === q.correct;
+  feedbackEl.className = `feedback show ${isCorrect ? 'correct-feedback' : 'wrong-feedback'}`;
+  feedbackEl.innerHTML = `
+    <span class="feedback-icon">${isCorrect ? '✓' : '✗'}</span>
+    <strong>${isCorrect ? 'Riktig!' : 'Ikke helt.'}</strong> ${q.feedback}
+  `;
+
+  document.getElementById(`q${qi}`).classList.add('locked');
+
+  // Check if done
+  if (answered === total) {
+    setTimeout(showResults, 600);
+  }
+}
+
+function showResults() {
+  const correctCount = questions.reduce((sum, q, qi) => {
+    const opt = document.querySelector(`#opt-${qi}-${q.correct}`);
+    return sum + (opt && opt.classList.contains('selected') ? 1 : 0);
+  }, 0);
+
+  document.getElementById('scoreNumber').textContent = correctCount;
+
+  let msg, sub;
+  const pct = correctCount / total;
+  if (pct === 1) {
+    msg = 'Imponerende!';
+    sub = 'Du har full kontroll på pliktetikk og konsekvensetikk.';
+  } else if (pct >= 0.75) {
+    msg = 'Veldig bra!';
+    sub = 'Du har god forståelse. Se gjennom forklaringene på de du bommet på.';
+  } else if (pct >= 0.5) {
+    msg = 'På god vei!';
+    sub = 'Les gjennom forklaringene og se videoen en gang til – da sitter det neste gang.';
+  } else {
+    msg = 'Øvelse gjør mester!';
+    sub = 'Det kan være lurt å se videoen på nytt og lese i pensum før du prøver igjen.';
+  }
+
+  document.getElementById('resultsMessage').textContent = msg;
+  document.getElementById('resultsSub').textContent = sub;
+  document.getElementById('resultsCard').classList.add('show');
+
+  document.getElementById('resultsCard').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function resetQuiz() {
+  answered = 0;
+  document.getElementById('answered').textContent = 0;
+  document.getElementById('progressBar').style.width = '0%';
+  document.getElementById('resultsCard').classList.remove('show');
+  buildQuiz();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+buildQuiz();
+</script>
+
+</body>
+</html>
